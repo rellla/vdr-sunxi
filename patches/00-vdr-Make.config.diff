@@ -1,0 +1,115 @@
+--- src/Make.config	1969-12-31 19:00:00.000000000 -0500
++++ src/Make.config	2014-08-19 11:10:47.000000000 -0400
+@@ -0,0 +1,112 @@
++#
++# User defined Makefile options for the Video Disk Recorder
++#
++# Copy this file to 'Make.config' and change the parameters as necessary.
++#
++# See the main source file 'vdr.c' for copyright information and
++# how to reach the author.
++#
++# $Id: Make.config.template 3.0 2013/02/18 10:55:39 kls Exp $
++
++### The C compiler and options:
++
++CC       = gcc
++CFLAGS   = -g -O3 -Wall
++
++CXX      = g++
++CXXFLAGS = -g -O3 -Wall -Werror=overloaded-virtual -Wno-parentheses
++
++### Set Flags for Cortex-A8 platform
++CPUOPT = armv7l
++CSAFLAGS = -Wall -fPIC -g -O2 -fomit-frame-pointer -fexpensive-optimizations -funroll-loops -mfloat-abi=hard -mtune=cortex-a8 -mcpu=cortex-a8 -D__ARM_NEON__ -mfpu=neon -march=armv7-a
++PARALLEL = PARALLEL_128_4INT
++CFLAGS = -pipe -O2 -mfloat-abi=hard -mtune=cortex-a8 -mcpu=cortex-a8 -D__ARM_NEON__ -mfpu=neon -march=armv7-a -fPIC -Werror=overloaded-virtual -Wno-parentheses
++
++### Set environment for crosscompiling
++EXPORTDIR = $(shell pdw)/../
++
++HOST=arm-linux-gnueabihf
++
++ifeq ($(shell uname -m),armv7l)
++  BUILD=arm-linux-gnueabihf
++  CROSS_COMPILE=
++  TOOLCHAIN = /usr/lib
++else
++  BUILD = amd64-linux
++  CROSS_COMPILE = ${HOST}-
++  TOOLCHAIN = /usr/lib/${HOST}
++  DESTDIR   = $(EXPORTDIR)/export
++endif
++
++export CFLAGS+=${LDFLAGS}
++export CXXFLAGS=${CFLAGS}
++export CPPFLAGS=${CFLAGS}
++export LD=${CROSS_COMPILE}ld
++export AR=${CROSS_COMPILE}ar
++export CC=${CROSS_COMPILE}gcc
++export CXX=${CROSS_COMPILE}g++
++export CXXCPP=${CXX} -E
++export RANLIB=${CROSS_COMPILE}ranlib
++export STRIP=${CROSS_COMPILE}strip
++export OBJDUMP=${CROSS_COMPILE}objdump
++
++# Use 'make M32=1 ...' to build a 32-bit version of VDR on a 64-bit machine:
++ifdef M32
++CFLAGS   += -m32
++CXXFLAGS += -m32
++endif
++
++### The directory environment:
++
++# Default directories (adjust as necessary or desired):
++
++PREFIX    = /usr/local
++BINDIR    = $(PREFIX)/bin
++INCDIR    = $(PREFIX)/include
++LIBDIR    = $(PREFIX)/lib/vdr
++LOCDIR    = $(PREFIX)/share/locale
++MANDIR    = $(PREFIX)/share/man
++PCDIR     = $(PREFIX)/lib/pkgconfig
++RESDIR    = $(PREFIX)/share/vdr
++#DVBDIR    = ../linux-sunxi
++
++VIDEODIR  = /video0
++CONFDIR   = /etc/vdr
++CACHEDIR  = $(VIDEODIR)
++
++# Overrides for preset/legacy configurations:
++
++# Use 'make LCLBLD=1' to build locale and plugin files under the source directory:
++ifdef LCLBLD
++LOCDIR       = $(CWD)/locale
++PLUGINDIR    = $(CWD)/PLUGINS
++ifndef PLUGIN # don't overwrite for plugins with old makefiles
++LIBDIR       = $(PLUGINDIR)/lib
++endif
++HDRDIR       = $(CWD)/include
++endif
++
++# Use 'make ONEDIR=1' to have all data in one single directory:
++ifdef ONEDIR
++VIDEODIR     = /video
++CACHEDIR     = $(VIDEODIR)
++CONFDIR      = $(VIDEODIR)
++RESDIR       = $(VIDEODIR)
++endif
++
++# Use this if you want to have a central place where you configure compile time
++# parameters for plugins:
++#PLGCFG = $(CONFDIR)/plugins.mk
++
++### The remote control:
++
++LIRC_DEVICE = /var/run/lirc/lircd
++
++### Define if you want vdr to not run as root:
++#VDR_USER = vdr
++
++### Fallback for plugins with old makefiles:
++ifdef PLUGIN
++CFLAGS   += -fPIC
++CXXFLAGS += -fPIC
++endif

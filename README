@@ -1,0 +1,99 @@
+VDR (www.tvdr.de) for Sunxi Devices
+===================================
+
+This is a guide and some scripts that collect VDR source files and some plugins, patch it and make it ready to build.
+<WIP ON>This is all work in progress, you may run into several errors, downloading twice, patching twice etc. 
+It's planned to integrate some security things, easy upgrade feature etc... </WIP OFF>
+
+Although this was intended to work on sunxi devices, it may work for any armhf platform as this is only a simple collection of vdr and some plugins
+which are patched with /patches. Other than cross building it on a Debian unstable amd64 system wasn't tested.
+
+1) Install toolchain
+
+In this example I do a cross compile on a Debian unstable host (the NEW debian multiarch way).
+A direct compile on the device should work, too. 
+
+deb http://toolchains.secretsauce.net unstable main
+
+dpkg --add-architecture armhf
+wget -q -O - http://toolchains.secretsauce.net/key.gpg | sudo apt-key add -
+
+apt-get update
+apt-get upgrade
+apt-get install gcc-4.9-arm-linux-gnueabihf g++-4.9-arm-linux-gnueabihf
+
+ln -s /usr/bin/arm-linux-gnueabihf-gcc-4.9 /usr/bin/arm-linux-gnueabihf-gcc
+ln -s /usr/bin/arm-linux-gnueabihf-c++-4.9 /usr/bin/arm-linux-gnueabihf-c++
+ln -s /usr/bin/arm-linux-gnueabihf-g++-4.9 /usr/bin/arm-linux-gnueabihf-g++
+ln -s /usr/bin/arm-linux-gnueabihf-gcov-4.9 /usr/bin/arm-linux-gnueabihf-gcov
+
+
+2) Install build dependencies
+
+..VDR
+apt-get install libjpeg8-dev:armhf libcap-dev:armhf libfontconfig1-dev:armhf libfreetype6-dev:armhf libncursesw5-dev:armhf
+
+..Markad
+apt-get install libavcodec-dev:armhf
+
+..EPGSearch
+apt-get install libpcre3-dev:armhf
+
+..Live
+apt-get install libcxxtools-dev:armhf libtntnet-dev:armhf libboost-dev:armhf 
+
+..SoftHDDevice
+apt-get install libxcb-screensaver0-dev:armhf libxcb-dpms0-dev:armhf libxcb-icccm4-dev:armhf libxcb-ewmh-dev:armhf libavresample-dev:armhf libavcodec-dev:armhf libvdpau-dev:armhf libx11-dev:armhf libx11-xcb-dev:armhf libasound2-dev:armhf
+
+..VDRManager
+apt-get install libssl-dev:armhf
+
+..SkinFlatPlus
+apt-get install libmagick++-dev:armhf
+
+
+3) Fetch sources and build it
+prepare.sh
+make
+make install
+
+
+4) Copy the files in /binaries to your destination system and make sure to have the runtime dependencies installed:
+
+..VDR
+apt-get install libjpeg8 libcap2 libfontconfig1 libfreetype6 libncursesw5 gettext
+
+..Markaf
+apt-get install libavcodec
+
+..EPGSearch
+apt-get install libpcre3
+
+..Live
+apt-get install licxxtools libtntnet libboost
+
+..SoftHDDevice
+apt-get install libxcb-screensaver0 libxcb-dpms0 libxcb-icccm4 libxcb-ewmh2 libxcb-utils libavresample1 libavcodec libvdpau1 libx11-6 libx11-xcb1 libasound2
+
+..VDRManager
+apt-get install libssl1.0.0
+
+..SkinFlatPlus
+apt-get install imagemagick
+
+
+At last you have to edit /etc/services:
+
+echo "svdrp 6419/tcp # svdrp (vdr)" >> /etc/services
+
+
+TODO Hints:
+
+- Create a runvdr (runvdr-extreme?)
+- channellogos for skinflatplus: http://creimer.net/channellogos/nopacity-logos-white-20140724.tar.gz
+- sc + dvbapi?
+- xvdr
+- skinopacity
+- osdteletext
+- smarttv-widget
+- vdrmanager-widget

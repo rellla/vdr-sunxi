@@ -1,0 +1,11 @@
+--- src/PLUGINS/src/femon/Makefile	2014-05-09 21:20:00.000000000 -0400
++++ src/PLUGINS/src/femon/Makefile	2014-08-19 12:20:21.000000000 -0400
+@@ -8,7 +8,7 @@
+ 
+ # Strip debug symbols?  Set eg. to /bin/true if not
+ 
+-STRIP = strip
++STRIP ?= strip
+ 
+ # The official name of this plugin.
+ # This name will be used in the '-P...' option of VDR to load the plugin.
