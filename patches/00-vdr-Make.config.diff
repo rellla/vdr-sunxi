@@ -1,6 +1,6 @@
 --- src/Make.config	1969-12-31 19:00:00.000000000 -0500
 +++ src/Make.config	2014-08-19 11:10:47.000000000 -0400
-@@ -0,0 +1,112 @@
+@@ -0,0 +1,110 @@
 +#
 +# User defined Makefile options for the Video Disk Recorder
 +#
@@ -26,8 +26,6 @@
 +CFLAGS = -pipe -O2 -mfloat-abi=hard -mtune=cortex-a8 -mcpu=cortex-a8 -D__ARM_NEON__ -mfpu=neon -march=armv7-a -fPIC -Werror=overloaded-virtual -Wno-parentheses
 +
 +### Set environment for crosscompiling
-+EXPORTDIR = $(shell pwd)/../
-+
 +HOST=arm-linux-gnueabihf
 +
 +ifeq ($(shell uname -m),armv7l)
@@ -38,7 +36,7 @@
 +  BUILD = amd64-linux
 +  CROSS_COMPILE = ${HOST}-
 +  TOOLCHAIN = /usr/lib/${HOST}
-+  DESTDIR   = $(EXPORTDIR)/export
++  DESTDIR   = $(BASEDIR)/export
 +endif
 +
 +export CFLAGS+=${LDFLAGS}

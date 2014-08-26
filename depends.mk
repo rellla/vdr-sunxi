@@ -2,7 +2,6 @@
 
 VDR_SOURCE="ftp://ftp.tvdr.de/vdr/Developer/vdr-2.1.6.tar.bz2"
 
-
 declare -A ext_pluginlist
 
 ext_pluginlist=(

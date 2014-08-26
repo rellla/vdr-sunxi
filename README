@@ -45,7 +45,7 @@ apt-get install libcxxtools-dev:armhf libtntnet-dev:armhf libboost-dev:armhf
 ..SoftHDDevice
 apt-get install libxcb-screensaver0-dev:armhf libxcb-dpms0-dev:armhf libxcb-icccm4-dev:armhf libxcb-ewmh-dev:armhf libavresample-dev:armhf libavcodec-dev:armhf libvdpau-dev:armhf libx11-dev:armhf libx11-xcb-dev:armhf libasound2-dev:armhf
 
-..VDRManager
+..VDRManager ..SC
 apt-get install libssl-dev:armhf
 
 ..SkinFlatPlus
@@ -58,7 +58,9 @@ make
 make install
 
 
-4) Copy the files in /binaries to your destination system and make sure to have the runtime dependencies installed:
+4) Make a tarball to move it to the device and make sure to have the runtime dependencies installed:
+
+make archive
 
 ..VDR
 apt-get install libjpeg8 libcap2 libfontconfig1 libfreetype6 libncursesw5 gettext
@@ -75,7 +77,7 @@ apt-get install licxxtools libtntnet libboost
 ..SoftHDDevice
 apt-get install libxcb-screensaver0 libxcb-dpms0 libxcb-icccm4 libxcb-ewmh2 libxcb-utils libavresample1 libavcodec libvdpau1 libx11-6 libx11-xcb1 libasound2
 
-..VDRManager
+..VDRManager ..SC
 apt-get install libssl1.0.0
 
 ..SkinFlatPlus
