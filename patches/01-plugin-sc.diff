@@ -1,0 +1,86 @@
+diff -uprN src/PLUGINS/src/sc/cam.c src/PLUGINS/src/sc/cam.c
+--- src/PLUGINS/src/sc/cam.c	2012-07-21 14:51:33.000000000 -0400
++++ src/PLUGINS/src/sc/cam.c	2014-08-26 06:58:27.977904777 -0400
+@@ -1841,7 +1841,7 @@ public:
+   cScCamSlot(cCam *Cam, const char *DevId, int Slot);
+   void Process(const unsigned char *data, int len);
+   eModuleStatus Status(void);
+-  bool Reset(bool log=true);
++  bool ResetSlot(bool log=true);
+   cCiFrame *Frame(void) { return &frame; }
+   };
+ 
+@@ -1853,7 +1853,7 @@ cScCamSlot::cScCamSlot(cCam *Cam, const
+   cam=Cam; devId=DevId; slot=Slot;
+   version=0; caids[0]=0; doReply=false; lastStatus=msReset;
+   frame.SetRb(&rb);
+-  Reset(false);
++  ResetSlot(false);
+ }
+ 
+ eModuleStatus cScCamSlot::Status(void)
+@@ -1876,7 +1876,7 @@ eModuleStatus cScCamSlot::Status(void)
+   return status;
+ }
+ 
+-bool cScCamSlot::Reset(bool log)
++bool cScCamSlot::ResetSlot(bool log)
+ {
+   reset=true; resetTimer.Set(SLOT_RESET_TIME);
+   rb.Clear();
+@@ -1890,7 +1890,7 @@ bool cScCamSlot::Check(void)
+   bool dr=cam->IsSoftCSA(false) || ScSetup.ConcurrentFF>0;
+   if(dr!=doReply && !IsDecrypting()) {
+     PRINTF(L_CORE_CI,"%s.%d: doReply changed, reset triggered",devId,slot);
+-    Reset(false);
++    ResetSlot(false);
+     doReply=dr;
+     }
+   if(checkTimer.TimedOut()) {
+@@ -2330,7 +2330,7 @@ bool cCam::Reset(int Slot)
+ {
+   cMutexLock lock(&ciMutex);
+   PRINTF(L_CORE_CI,"%s: reset of slot %d requested",devId,Slot);
+-  return slots[Slot] ? slots[Slot]->Reset():false;
++  return slots[Slot] ? slots[Slot]->ResetSlot():false;
+ }
+ 
+ eModuleStatus cCam::ModuleStatus(int Slot)
+diff -uprN src/PLUGINS/src/sc/device.h src/PLUGINS/src/sc/device.h
+--- src/PLUGINS/src/sc/device.h	2012-07-21 14:51:33.000000000 -0400
++++ src/PLUGINS/src/sc/device.h	2014-08-26 06:56:41.273906064 -0400
+@@ -45,6 +45,10 @@ class cDeCSA;
+ #define DVB_DEV_SPEC CardIndex(),0
+ #endif
+ 
++#ifndef MAXDVBDEVICES
++#define MAXDVBDEVICES 8
++#endif
++
+ // ----------------------------------------------------------------
+ 
+ #ifndef SASC
+diff -uprN src/PLUGINS/src/sc/device-tmpl.c src/PLUGINS/src/sc/device-tmpl.c
+--- src/PLUGINS/src/sc/device-tmpl.c	2012-07-21 14:51:33.000000000 -0400
++++ src/PLUGINS/src/sc/device-tmpl.c	2014-08-26 06:59:45.093903847 -0400
+@@ -41,7 +41,6 @@ private:
+ #endif //!SASC
+ protected:
+ #ifndef SASC
+-  virtual bool Ready(void);
+   virtual bool SetPid(cPidHandle *Handle, int Type, bool On);
+   virtual bool SetChannelDevice(const cChannel *Channel, bool LiveView);
+   virtual bool OpenDvr(void);
+@@ -164,12 +163,6 @@ bool SCDEVICE::HasCi(void)
+   return cam || hwciadapter;
+ }
+ 
+-bool SCDEVICE::Ready(void)
+-{
+-  return (cam         ? cam->Ready():true) &&
+-         (hwciadapter ? hwciadapter->Ready():true);
+-}
+-
+ bool SCDEVICE::SetPid(cPidHandle *Handle, int Type, bool On)
+ {
+   if(cam) cam->SetPid(Type,Handle->pid,On);

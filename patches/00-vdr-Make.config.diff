@@ -26,7 +26,7 @@
 +CFLAGS = -pipe -O2 -mfloat-abi=hard -mtune=cortex-a8 -mcpu=cortex-a8 -D__ARM_NEON__ -mfpu=neon -march=armv7-a -fPIC -Werror=overloaded-virtual -Wno-parentheses
 +
 +### Set environment for crosscompiling
-+EXPORTDIR = $(shell pdw)/../
++EXPORTDIR = $(shell pwd)/../
 +
 +HOST=arm-linux-gnueabihf
 +

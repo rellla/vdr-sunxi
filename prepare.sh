@@ -21,7 +21,7 @@ prepare_plugins() {
     for i in "${!ext_pluginlist[@]}"; do
 	if [ ! -e "src/PLUGINS/src/$i/Makefile" ]; then
 	    if [ $i == "vdrmanager" ]; then
-		(cd src/PLUGINS/src/; wget -O - "${ext_pluginlist[$i]}" | tar xzv; ln -s *vdr-manager-* $i | echo "installed: $i")
+		(cd src/PLUGINS/src/; wget -O - "${ext_pluginlist[$i]}" | tar xzv; ln -s vdr-manager-*/vdr-vdrmanager $i | echo "installed: $i")
 	    elif [ $i == "skinflatplus" ]; then
 		(cd src/PLUGINS/src/; wget -O - "${ext_pluginlist[$i]}" | tar xzv; ln -s *flatplus-* $i | echo "installed: $i")
 	    else
