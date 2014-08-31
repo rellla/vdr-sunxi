@@ -56,7 +56,7 @@ apt-get install libmagick++-dev:armhf
 prepare.sh
 make
 make install
-
+make logos
 
 4) Make a tarball to move it to the device and make sure to have the runtime dependencies installed:
 
@@ -92,7 +92,6 @@ echo "svdrp 6419/tcp # svdrp (vdr)" >> /etc/services
 TODO Hints:
 
 - Create a runvdr (runvdr-extreme?)
-- channellogos for skinflatplus: http://creimer.net/channellogos/nopacity-logos-white-20140724.tar.gz
 - dvbapi?
 - xvdr
 - skinopacity
