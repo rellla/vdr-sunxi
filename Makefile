@@ -33,5 +33,5 @@ logos: $(TMPLOGOS)$(LOGOS)
 
 $(TMPLOGOS)$(LOGOS):
 	rm -rf $(TMPLOGOS)
-	mkdir $(TMPLOGOS)
+	mkdir -p $(TMPLOGOS)
 	wget $(NOPACITYLOGOS) -O $(TMPLOGOS)$(LOGOS)
