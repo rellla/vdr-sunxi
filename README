@@ -11,7 +11,10 @@ which are patched with /patches. Other than cross building it on a Debian unstab
 1) Install toolchain
 
 In this example I do a cross compile on a Debian unstable host (the NEW debian multiarch way).
-A direct compile on the device should work, too. 
+You have to ensure, that host and destination system use the same symbol version on the libstdc++.so binary. It is not possible to run binaries, that are built on a Debian Sid host system with gcc-4.9.
+A Debian Sid or Jessie destination system should work, because both use compiler version 4.9 and the symbol version should match.
+
+A direct compile on the device should work, too.
 
 deb http://toolchains.secretsauce.net unstable main
 
