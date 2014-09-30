@@ -1,0 +1,35 @@
+#!/bin/bash
+
+export LANG=de_DE.UTF-8
+umask 000
+
+VDRUSER="root"
+VDRDIR="/usr/local/bin"
+VDRPRG="./vdr"
+VDRVIDEODIR="/video0"
+VDRCONFDIR="/etc/vdr"
+VDREPGDIR="/video0"
+LOCDIR="/usr/local/share/locale"
+MARKADBIN="/usr/local/bin"
+MARKADLOGOS="/usr/local/share/vdr/plugins/markad"
+TTY="/dev/tty2"
+WATCHDOG="120"
+RECCMD="/usr/local/bin/reccmd"
+
+VDRCMD="$VDRPRG -u $VDRUSER -t $TTY -w $WATCHDOG --vfat -c $VDRCONFDIR -E $VDREPGDIR -v $VDRVIDEODIR --localedir=$LOCDIR -r $RECCMD \
+-Pdummydevice \
+-Pstreamdev-server \
+-Psc \
+-Psvdrposd \
+-Pepgsearch \
+-Plive \
+-Pvdrmanager \
+-P'markad -b /usr/local/bin -l /usr/local/share/vdr/plugins/markad' 
+$*"
+#-Pvnsiserver \
+#-Pfemon \
+
+#while (true) do
+#  cd $VDRDIR
+  eval "$VDRCMD"
+#done

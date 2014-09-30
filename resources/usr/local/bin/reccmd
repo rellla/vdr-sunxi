@@ -1,0 +1,21 @@
+#!/bin/sh
+case "$1" in
+   before)
+      ;;
+   after)
+      touch $2/../../.update
+      chmod 777 $2
+      chmod 777 $2/*
+      chown vdr:users $2
+      chown vdr:users $2/*
+      ;;
+   edited)
+      touch $2/../../.update
+      chmod 777 $2
+      chmod 777 $2/*
+      chown vdr:users $2
+      chown vdr:users $2/*
+      ;;
+   *)
+      ;;
+esac
