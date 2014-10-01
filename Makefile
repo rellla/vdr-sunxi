@@ -10,7 +10,7 @@ TMPLOGOS=tmp/logos/
 LOGOS=logos.tar.gz
 NOPACITYLOGOS="http://creimer.net/channellogos/nopacity-logos-white-20140724.tar.gz"
 
-all clean clean-plugins install:
+all clean clean-plugins plugins install:
 	(export PKG_CONFIG_PATH=/usr/lib/arm-linux-gnueabihf/pkgconfig; cd src; $(MAKE) $@)
 
 archive: $(DESTDIR)/usr/local/bin/vdr
