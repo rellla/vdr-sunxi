@@ -23,7 +23,7 @@
 +CPUOPT = armv7l
 +CSAFLAGS = -Wall -fPIC -g -O2 -fomit-frame-pointer -fexpensive-optimizations -funroll-loops -mfloat-abi=hard -mtune=cortex-a8 -mcpu=cortex-a8 -D__ARM_NEON__ -mfpu=neon -march=armv7-a
 +PARALLEL = PARALLEL_128_4INT
-+CFLAGS = -pipe -O2 -mfloat-abi=hard -mtune=cortex-a8 -mcpu=cortex-a8 -D__ARM_NEON__ -mfpu=neon -march=armv7-a -fPIC -Werror=overloaded-virtual -Wno-parentheses
++CFLAGS = -pipe -O2 -mfloat-abi=hard -mtune=cortex-a8 -mcpu=cortex-a8 -D__ARM_NEON__ -mfpu=neon -march=armv7-a -fPIC -Werror=overloaded-virtual -Wno-parentheses -fsigned-char
 +
 +### Set environment for crosscompiling
 +HOST=arm-linux-gnueabihf
