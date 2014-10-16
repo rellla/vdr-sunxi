@@ -7,8 +7,8 @@ DATE = $(shell date +%Y%m%d"_"%H%M)
 TARBALL = vdr-$(VDRVERSION)-armhf$(DATE).tar.bz2
 
 TMPLOGOS=tmp/logos/
-LOGOS=logos.tar.gz
-NOPACITYLOGOS="http://creimer.net/channellogos/nopacity-logos-white-20140724.tar.gz"
+LOGOS=logos.tar.bz2
+NOPACITYLOGOS="http://creimer.net/channellogos/nopacity-white-20140918.tar.bz2"
 
 all clean clean-plugins plugins install:
 	(export PKG_CONFIG_PATH=/usr/lib/arm-linux-gnueabihf/pkgconfig; cd src; $(MAKE) $@)
@@ -21,13 +21,13 @@ archive: $(DESTDIR)/usr/local/bin/vdr
 	)
 
 logos: $(TMPLOGOS)$(LOGOS)
-	rm -rf $(TMPLOGOS)/nopacitylogos
+	rm -rf $(TMPLOGOS)/nopacity-white
 	(	cd $(TMPLOGOS) &&\
-		tar xzvf $(LOGOS) \
+		tar xjvf $(LOGOS) \
 	)
 	rm -rf $(DESTDIR)$(RESDIR)/plugins/skinflatplus/logos
 	mkdir -p $(DESTDIR)$(RESDIR)/plugins/skinflatplus/logos
-	(	cd $(TMPLOGOS)/nopacitylogos/white &&\
+	(	cd $(TMPLOGOS)/nopacity-white &&\
 		cp -a * $(DESTDIR)$(RESDIR)/plugins/skinflatplus/logos \
 	)
 
