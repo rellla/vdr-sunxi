@@ -1,5 +1,5 @@
---- src/Make.config	1969-12-31 19:00:00.000000000 -0500
-+++ src/Make.config	2014-08-19 11:10:47.000000000 -0400
+--- Make.config	1969-12-31 19:00:00.000000000 -0500
++++ Make.config	2014-08-19 11:10:47.000000000 -0400
 @@ -0,0 +1,110 @@
 +#
 +# User defined Makefile options for the Video Disk Recorder

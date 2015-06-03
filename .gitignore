@@ -1,7 +1,4 @@
-.plugins_patched
-.vdr_installed
-.vdr_patched
-export
-src
-vdr-*
+.*_patched
+.*_downloaded
+VDR
 tmp
