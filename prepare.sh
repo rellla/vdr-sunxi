@@ -2,8 +2,8 @@
 
 BASE=`pwd`
 TMP=$BASE/tmp
-VDRDIR=$TMP/vdr
-PLUGINSRCDIR=$VDRDIR/PLUGINS/src
+VDR=$TMP/vdr
+PLUGINSRCDIR=$VDR/PLUGINS/src
 
 create_dirs() {
 	if [ ! -e $TMP ]; then
@@ -48,7 +48,7 @@ patch_vdr() {
 	    if ! is_patched $PKGNAME; then
 		if is_downloaded $PKGNAME; then
 		    echo "patching $NAME..."
-		    patch -d $VDRDIR -f -r - -p 0 < $i
+		    patch -d $VDR -f -r - -p 0 < $i
 		    touch $TMP/.$PKGNAME"_patched"
 		fi
 	    else
@@ -58,21 +58,6 @@ patch_vdr() {
     done
 }
 
-patch_plugins() {
-    for i in $(find $p -type f -name *.diff); do
-	    if ! is_patched $PKGNAME; then
-		if is_downloaded $PKGNAME; then
-		    echo "patching $NAME..."
-		    patch -d $PLUGINSRCDIR/$NAME -f -r - -p 0 < $i
-		    touch $TMP/.$PKGNAME"_patched"
-		fi
-	    else
-		echo $NAME already patched, please undo or delete first!
-	    fi
-    done
-}
-
-
 download_plugins() {
 	if ! is_downloaded $PKGNAME; then
 	    echo "downloading $NAME... $DOWNLOAD"
@@ -81,6 +66,20 @@ download_plugins() {
 	else
 	    echo $NAME already downloaded, please delete first!
 	fi
+}
+
+patch_plugins() {
+    for i in $(find $p -type f -name *.diff); do
+	    if ! is_patched $PKGNAME; then
+		if is_downloaded $PKGNAME; then
+		    echo "patching $NAME..."
+		    patch -d $PLUGINSRCDIR/$NAME -f -r - -p 0 < $i
+		fi
+	    else
+		echo $NAME already patched, please undo or delete first!
+	    fi
+    done
+    touch $TMP/.$PKGNAME"_patched"
 }
 
 create_dirs

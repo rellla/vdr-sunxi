@@ -1,0 +1,20 @@
+--- command/decoder.cpp	2014-09-02 06:23:18.000000000 -0400
++++ command/decoder.cpp	2015-06-05 06:44:01.000000000 -0400
+@@ -102,16 +102,10 @@ fail:
+ }
+ #endif
+ 
+-#ifndef AV_CODEC_ID_H264
++#if LIBAVCODEC_VERSION_INT < ((55<<16)+(18<<8)+102)
+ #define AV_CODEC_ID_H264 CODEC_ID_H264
+-#endif
+-#ifndef AV_CODEC_ID_MPEG2VIDEO
+ #define AV_CODEC_ID_MPEG2VIDEO CODEC_ID_MPEG2VIDEO
+-#endif
+-#ifndef AV_CODEC_ID_MPEG2VIDEO_XVMC
+ #define AV_CODEC_ID_MPEG2VIDEO_XVMC CODEC_ID_MPEG2VIDEO_XVMC
+-#endif
+-#ifndef AV_CODEC_ID_NONE
+ #define AV_CODEC_ID_NONE CODEC_ID_NONE
+ #endif
+ 

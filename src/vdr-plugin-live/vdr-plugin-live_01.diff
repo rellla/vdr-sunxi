@@ -1,0 +1,162 @@
+diff --git javascript/treeview.js javascript/treeview.js
+index e9edbdd..2683b08 100644
+--- javascript/treeview.js
++++ javascript/treeview.js
+@@ -72,12 +72,93 @@
+ 		if (imgChild != null)
+ 			setImages(imgChild, "img/minus.png", "img/folder_open.png");
+ 		sibling.style.display = 'block';
++		updateCookieOnExpand( sibling.id );
+ 	}
+ 	// Collapse the branch if it IS visible
+ 	else
+ 	{
++		updateCookieOnCollapse( sibling.id );
+ 		if (imgChild != null)
+ 			setImages(imgChild, "img/plus.png", "img/folder_closed.png");
+ 		sibling.style.display = 'none';
+ 	}
+ }
++
++function updateCookieOnExpand( id ){
++	var openNodes = readCookie( cookieNameRec );
++	if (openNodes == null)
++		openNodes = id;
++	else if (openNodes == "")
++		openNodes = id;
++	else
++		openNodes += ",.," + id;
++	createCookie( cookieNameRec, openNodes, 14 );
++}
++
++function updateCookieOnCollapse( id ){
++	var openNodes = readCookie( cookieNameRec );
++	if (openNodes != null)
++		openNodes = openNodes.split(",.,");
++	else
++		openNodes = [];
++	for (var z=0; z<openNodes.length; z++){
++		if (openNodes[z] === sibling.id){
++			openNodes.splice(z,1);
++			break;
++		}
++	}
++	openNodes = openNodes.join(",.,");
++	createCookie( cookieNameRec, openNodes, 14 );
++}
++
++function openNodesOnPageLoad(){
++	var openNodes = readCookie( cookieNameRec );
++	if (openNodes != null && openNodes !== "")
++		openNodes = openNodes.split(",.,");
++	else
++		openNodes = [];
++	for (var z=0; z<openNodes.length; z++){
++		var ul = document.getElementById(openNodes[z]);
++		if (ul){
++			ul.style.display = 'block';
++			//var imgChild = findChildNode(ul.parentNode, "recording_imgs");
++			var imgChild = ul.parentNode.children[0].children[0];
++			//var imgChild = ul.parentNode.firstChild.firstChild;
++			if (imgChild != null) // && imgChild.className == "recording_imgs")
++				setImages(imgChild, "img/minus.png", "img/folder_open.png");
++		}
++	}
++}
++
++//cookie scripts taken from http://www.quirksmode.org/js/cookies.html
++
++function createCookie(name,value,days) {
++	if (days) {
++		var date = new Date();
++		date.setTime(date.getTime()+(days*24*60*60*1000));
++		var expires = "; expires="+date.toGMTString();
++	}
++	else var expires = "";
++	document.cookie = name+"="+value+expires+"; path=/";
++}
++
++function readCookie(name) {
++	var nameEQ = name + "=";
++	var ca = document.cookie.split(';');
++	for(var i=0;i < ca.length;i++) {
++		var c = ca[i];
++		while (c.charAt(0)==' ') c = c.substring(1,c.length);
++		if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
++	}
++	return null;
++}
++
++function eraseCookie(name) {
++	createCookie(name,"",-1);
++}
++
++var cookieNameRec = "VDR-Live-Recordings-Tree-Open-Nodes";
++
++window.addEvent('domready', function(){
++	openNodesOnPageLoad();
++}); 
+diff --git pages/recordings.ecpp pages/recordings.ecpp
+index 80f145b..f122acc 100644
+--- pages/recordings.ecpp
++++ pages/recordings.ecpp
+@@ -99,10 +99,12 @@
+ 		}
+ 		function ExpandAll()
+ 		{
++			var openNodes = [];
+ 			recordingNodes = window.document.getElementsBySelector("ul.recordingslist");
+ 			for (idx = 0; idx < recordingNodes.length; idx++) {
+ 				if (recordingNodes[idx].parentNode.className != 'recordings') {
+ 					recordingNodes[idx].style.display = 'block';
++					openNodes.push( recordingNodes[idx].id ); 
+ 				}
+ 			}
+ 			expandNodes = window.document.getElementsBySelector("img.recording_expander");
+@@ -113,6 +115,8 @@
+ 			for (idx = 0; idx < folderNodes.length; idx++) {
+ 				folderNodes[idx].src = "img/folder_open.png";
+ 			}
++			openNodes = openNodes.join(",.,");
++			createCookie( cookieNameRec, openNodes, 14 );
+ 		}
+ 		function CollapseAll()
+ 		{
+@@ -130,6 +134,7 @@
+ 			for (idx = 0; idx < folderNodes.length; idx++) {
+ 				folderNodes[idx].src = "img/folder_closed.png";
+ 			}
++			eraseCookie( cookieNameRec );
+ 		}
+ 		//--></script>
+ 	</head>
+@@ -180,6 +185,8 @@
+ 	filter;
+ 	path[];
+ 	int level = 0;
++	int counter = 0;
++	string idHash = "";
+ </%args>
+ <%cpp>
+ RecordingsTreePtr recordingsTree(LiveRecordingsManager()->GetRecordingsTree());
+@@ -200,6 +207,7 @@
+ 	recItems.sort(RecordingsItemPtrCompare::ByAscendingName);
+ for (recIter = recItems.begin(); recIter != recItems.end(); ++recIter) {
+ 	RecordingsItemPtr recItem = *recIter;
++	counter++;
+ </%cpp>
+ 	<li class="recording">
+ 		<& rec_item_dir name=(recItem->Name()) level=(level) &>
+@@ -219,8 +227,11 @@
+ 		recItemParams.add("path", recItem->Name());
+ 		recItemParams.add("level", lexical_cast<string, int>(level + 1));
+ 		recItemParams.add("filter", filter);
++		string combinedId = recItem->Name() + "_";
++		combinedId += counter + "_" + level;
++		idHash = MD5Hash(combinedId);
+ </%cpp>
+-		<ul class="recordingslist" style="display: none;">
++		<ul id="fldr_<$ idHash $>" class="recordingslist" style="display: none;">
+ <%cpp>
+ 		callComp("recordings.recordings_item", request, reply, recItemParams);
+ </%cpp>

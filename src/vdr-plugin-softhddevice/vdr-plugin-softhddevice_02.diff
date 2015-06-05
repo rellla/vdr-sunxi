@@ -1,0 +1,11 @@
+--- Makefile	2015-03-25 10:26:15.139720161 -0400
++++ Makefile	2015-06-05 06:11:11.521702482 -0400
+@@ -41,7 +41,7 @@
+ #CONFIG += -DUSE_MPEG_COMPLETE		# support only complete mpeg packets
+ #CONFIG += -DH264_EOS_TRICKSPEED	# insert seq end packets for trickspeed
+ #CONDIF += -DDUMP_TRICKSPEED		# dump trickspeed packets
+-#CONFIG += -DUSE_BITMAP			# VDPAU, use bitmap surface for OSD
++CONFIG += -DUSE_BITMAP			# VDPAU, use bitmap surface for OSD
+ CONFIG += -DUSE_VDR_SPU			# use VDR SPU decoder.
+ #CONFIG += -DUSE_SOFTLIMIT		# (tobe removed) limit the buffer fill
+ 

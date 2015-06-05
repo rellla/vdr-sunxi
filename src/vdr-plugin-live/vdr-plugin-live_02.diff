@@ -1,0 +1,39 @@
+--- Makefile	2015-06-05 07:41:59.000000000 -0400
++++ Makefile	2015-06-05 07:39:49.000000000 -0400
+@@ -15,10 +15,11 @@ HAVE_LIBPCRECPP = $(shell pcre-config --
+ 
+ ### The directory environment:
+ # Use package data if installed...otherwise assume we're under the VDR source directory:
+-PKGCFG = $(if $(VDRDIR),$(shell pkg-config --variable=$(1) $(VDRDIR)/vdr.pc),$(shell pkg-config --variable=$(1) vdr || pkg-config --variable=$(1) ../../../vdr.pc))
++PKGCFG = $(if $(VDRDIR),$(shell pkg-config --variable=$(1) $(VDRDIR)/vdr.pc),$(shell PKG_CONFIG_PATH="$$PKG_CONFIG_PATH:../../.." pkg-config --variable=$(1) vdr))
+ LIBDIR = $(call PKGCFG,libdir)
+ LOCDIR = $(call PKGCFG,locdir)
+ PLGCFG = $(call PKGCFG,plgcfg)
++PLGRES = $(call PKGCFG,resdir)/plugins/$(PLUGIN)
+ #
+ TMPDIR ?= /tmp
+ 
+@@ -50,8 +51,8 @@ ifneq ($(HAVE_LIBPCRECPP),)
+ endif
+ 
+ ### export all vars for sub-makes, using absolute paths
+-LIBDIR := $(shell cd $(LIBDIR) >/dev/null 2>&1 && pwd)
+-LOCDIR := $(shell cd $(LOCDIR) >/dev/null 2>&1 && pwd)
++#LIBDIR := $(shell cd $(LIBDIR) >/dev/null 2>&1 && pwd)
++#LOCDIR := $(shell cd $(LOCDIR) >/dev/null 2>&1 && pwd)
+ export
+ unexport PLUGIN
+ 
+@@ -133,7 +134,11 @@ $(SOFILE): $(VERSIONSUFFIX) $(SUBDIRS) $
+ install-lib: $(SOFILE)
+ 	install -D $^ $(DESTDIR)$(LIBDIR)/$^.$(APIVERSION)
+ 
+-install: install-lib install-i18n
++install-resources:
++	mkdir -p $(DESTDIR)$(PLGRES)
++	cp -r live/* $(DESTDIR)$(PLGRES)
++
++install: install-lib install-i18n install-resources
+ 
+ dist: $(I18Npo) clean
+ 	@-rm -rf $(TMPDIR)/$(ARCHIVE)

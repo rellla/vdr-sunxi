@@ -1,0 +1,11 @@
+--- softhddev.c	2015-06-05 06:03:16.397708213 -0400
++++ softhddev.c	2015-06-05 06:04:21.445707428 -0400
+@@ -92,7 +92,7 @@
+ static signed char ConfigStartSuspended;	///< flag to start in suspend mode
+ static char ConfigFullscreen;		///< fullscreen modus
+ static const char *X11ServerArguments;	///< default command arguments
+-static char ConfigStillDecoder;		///< hw/sw decoder for still picture
++static signed char ConfigStillDecoder;		///< hw/sw decoder for still picture
+ 
+ static pthread_mutex_t SuspendLockMutex;	///< suspend lock mutex
+ 
