@@ -54,6 +54,9 @@ apt-get install libssl-dev:armhf
 ..SkinFlatPlus
 apt-get install libmagick++-dev:armhf
 
+..Skindesigner
+apt-get install librsvg2-dev libcairo2-dev libxml2-dev libcurl4-openssl-dev
+
 
 3) Fetch sources and build it
 prepare.sh
@@ -68,7 +71,7 @@ make archive
 ..VDR
 apt-get install libjpeg8 libcap2 libfontconfig1 libfreetype6 libncursesw5 gettext
 
-..Markaf
+..Markad
 apt-get install libavcodec
 
 ..EPGSearch
@@ -85,6 +88,9 @@ apt-get install libssl1.0.0
 
 ..SkinFlatPlus
 apt-get install imagemagick
+
+..Skindesigner
+apt-get install librsvg2-2 libcairo2 libxml2 libcurl3
 
 
 At last you have to edit /etc/services:

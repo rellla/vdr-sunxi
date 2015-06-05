@@ -1,0 +1,481 @@
+diff --git codec.c codec.c
+index 8fc145c..3b6c17b 100644
+--- codec.c
++++ codec.c
+@@ -635,13 +635,13 @@ void CodecVideoDecode(VideoDecoder * decoder, const AVPacket * avpkt)
+ 	    decoder->FirstKeyFrame++;
+ 	    if (frame->key_frame) {
+ 		Debug(3, "codec: key frame after %d frames\n",
+-			decoder->FirstKeyFrame);
+-		    decoder->FirstKeyFrame = 0;
+-		}
+-	    } else {
+-		//DisplayPts(video_ctx, frame);
+-		VideoRenderFrame(decoder->HwDecoder, video_ctx, frame);
++		    decoder->FirstKeyFrame);
++		decoder->FirstKeyFrame = 0;
+ 	    }
++	} else {
++	    //DisplayPts(video_ctx, frame);
++	    VideoRenderFrame(decoder->HwDecoder, video_ctx, frame);
++	}
+ #else
+ 	//DisplayPts(video_ctx, frame);
+ 	VideoRenderFrame(decoder->HwDecoder, video_ctx, frame);
+diff --git softhddev.c softhddev.c
+index a44f020..bc0a3a4 100644
+--- softhddev.c
++++ softhddev.c
+@@ -2866,17 +2866,21 @@ void OsdClose(void)
+ /**
+ **	Draw an OSD pixmap.
+ **
++**	@param xi	x-coordinate in argb image
++**	@param yi	y-coordinate in argb image
++**	@paran height	height in pixel in argb image
++**	@paran width	width in pixel in argb image
++**	@param pitch	pitch of argb image
++**	@param argb	32bit ARGB image data
+ **	@param x	x-coordinate on screen of argb image
+ **	@param y	y-coordinate on screen of argb image
+-**	@paran height	height in pixel of argb image
+-**	@paran width	width in pixel of argb image
+-**	@param argb	height * width 32bit ARGB image data
+ */
+-void OsdDrawARGB(int x, int y, int height, int width, const uint8_t * argb)
++void OsdDrawARGB(int xi, int yi, int height, int width, int pitch,
++    const uint8_t * argb, int x, int y)
+ {
+     // wakeup display for showing remote learning dialog
+     VideoDisplayWakeup();
+-    VideoOsdDrawARGB(x, y, height, width, argb);
++    VideoOsdDrawARGB(xi, yi, height, width, pitch, argb, x, y);
+ }
+ 
+ //////////////////////////////////////////////////////////////////////////////
+diff --git softhddev.h softhddev.h
+index a793503..efb2e25 100644
+--- softhddev.h
++++ softhddev.h
+@@ -1,7 +1,7 @@
+ ///
+ ///	@file softhddev.h	@brief software HD device plugin header file.
+ ///
+-///	Copyright (c) 2011 - 2014 by Johns.  All Rights Reserved.
++///	Copyright (c) 2011 - 2015 by Johns.  All Rights Reserved.
+ ///
+ ///	Contributor(s):
+ ///
+@@ -34,7 +34,8 @@ extern "C"
+     /// C plugin close osd
+     extern void OsdClose(void);
+     /// C plugin draw osd pixmap
+-    extern void OsdDrawARGB(int, int, int, int, const uint8_t *);
++    extern void OsdDrawARGB(int, int, int, int, int, const uint8_t *, int,
++	int);
+ 
+     /// C plugin play audio packet
+     extern int PlayAudio(const uint8_t *, int, uint8_t);
+diff --git softhddevice.cpp softhddevice.cpp
+index e933955..4073672 100644
+--- softhddevice.cpp
++++ softhddevice.cpp
+@@ -1,7 +1,7 @@
+ ///
+ ///	@file softhddevice.cpp	@brief A software HD device plugin for VDR.
+ ///
+-///	Copyright (c) 2011 - 2013 by Johns.  All Rights Reserved.
++///	Copyright (c) 2011 - 2015 by Johns.  All Rights Reserved.
+ ///
+ ///	Contributor(s):
+ ///
+@@ -431,6 +431,8 @@ void cSoftOsd::Flush(void)
+ 	// draw all bitmaps
+ 	for (i = 0; (bitmap = GetBitmap(i)); ++i) {
+ 	    uint8_t *argb;
++	    int xs;
++	    int ys;
+ 	    int x;
+ 	    int y;
+ 	    int w;
+@@ -449,22 +451,52 @@ void cSoftOsd::Flush(void)
+ 	    } else if (!bitmap->Dirty(x1, y1, x2, y2)) {
+ 		continue;		// nothing dirty continue
+ 	    }
+-	    // convert and upload only dirty areas
++	    // convert and upload only visible dirty areas
++	    xs = bitmap->X0() + Left();
++	    ys = bitmap->Y0() + Top();
++	    // FIXME: negtative position bitmaps
+ 	    w = x2 - x1 + 1;
+ 	    h = y2 - y1 + 1;
++	    // clip to screen
+ 	    if (1) {			// just for the case it makes trouble
+ 		int width;
+ 		int height;
+ 		double video_aspect;
+ 
++		if (xs < 0) {
++		    if (xs + x1 < 0) {
++			x1 -= xs + x1;
++			w += xs + x1;
++			if (w <= 0) {
++			    continue;
++			}
++		    }
++		    xs = 0;
++		}
++		if (ys < 0) {
++		    if (ys + y1 < 0) {
++			y1 -= ys + y1;
++			h += ys + y1;
++			if (h <= 0) {
++			    continue;
++			}
++		    }
++		    ys = 0;
++		}
+ 		::GetOsdSize(&width, &height, &video_aspect);
+-		if (w > width) {
+-		    w = width;
+-		    x2 = x1 + width - 1;
++		if (w > width - xs - x1) {
++		    w = width - xs - x1;
++		    if (w <= 0) {
++			continue;
++		    }
++		    x2 = x1 + w - 1;
+ 		}
+-		if (h > height) {
+-		    h = height;
+-		    y2 = y1 + height - 1;
++		if (h > height - ys - y1) {
++		    h = height - ys - y1;
++		    if (h <= 0) {
++			continue;
++		    }
++		    y2 = y1 + h - 1;
+ 		}
+ 	    }
+ #ifdef DEBUG
+@@ -482,10 +514,12 @@ void cSoftOsd::Flush(void)
+ 	    }
+ #ifdef OSD_DEBUG
+ 	    dsyslog("[softhddev]%s: draw %dx%d%+d%+d bm\n", __FUNCTION__, w, h,
+-		Left() + bitmap->X0() + x1, Top() + bitmap->Y0() + y1);
++		xs + x1, ys + y1);
+ #endif
+-	    OsdDrawARGB(Left() + bitmap->X0() + x1, Top() + bitmap->Y0() + y1,
+-		w, h, argb);
++	    printf("[softhddev]%s: draw %dx%d%+d%+d bm\n", __FUNCTION__, w, h,
++		xs + x1, ys + y1);
++	    OsdDrawARGB(0, 0, w, h, w * sizeof(uint32_t), argb, xs + x1,
++		ys + y1);
+ 
+ 	    bitmap->Clean();
+ 	    // FIXME: reuse argb
+@@ -497,21 +531,76 @@ void cSoftOsd::Flush(void)
+ 
+     LOCK_PIXMAPS;
+     while ((pm = (dynamic_cast < cPixmapMemory * >(RenderPixmaps())))) {
++	int xp;
++	int yp;
++	int stride;
+ 	int x;
+ 	int y;
+ 	int w;
+ 	int h;
+ 
+-	x = Left() + pm->ViewPort().X();
+-	y = Top() + pm->ViewPort().Y();
++	x = pm->ViewPort().X();
++	y = pm->ViewPort().Y();
+ 	w = pm->ViewPort().Width();
+ 	h = pm->ViewPort().Height();
++	stride = w * sizeof(tColor);
++
++	// clip to osd
++	xp = 0;
++	if (x < 0) {
++	    xp = -x;
++	    w -= xp;
++	    x = 0;
++	}
++
++	yp = 0;
++	if (y < 0) {
++	    yp = -y;
++	    h -= yp;
++	    y = 0;
++	}
++
++	if (w > Width() - x) {
++	    w = Width() - x;
++	}
++	if (h > Height() - y) {
++	    h = Height() - y;
++	}
+ 
++	x += Left();
++	y += Top();
++
++	// clip to screen
++	if (1) {			// just for the case it makes trouble
++	    // and it can happen!
++	    int width;
++	    int height;
++	    double video_aspect;
++
++	    if (x < 0) {
++		w += x;
++		xp += -x;
++		x = 0;
++	    }
++	    if (y < 0) {
++		h += y;
++		yp += -y;
++		y = 0;
++	    }
++
++	    ::GetOsdSize(&width, &height, &video_aspect);
++	    if (w > width - x) {
++		w = width - x;
++	    }
++	    if (h > height - y) {
++		h = height - y;
++	    }
++	}
+ #ifdef OSD_DEBUG
+-	dsyslog("[softhddev]%s: draw %dx%d%+d%+d %p\n", __FUNCTION__, w, h, x,
+-	    y, pm->Data());
++	dsyslog("[softhddev]%s: draw %dx%d%+d%+d*%d -> %+d%+d %p\n",
++	    __FUNCTION__, w, h, xp, yp, stride, x, y, pm->Data());
+ #endif
+-	OsdDrawARGB(x, y, w, h, pm->Data());
++	OsdDrawARGB(xp, yp, w, h, stride, pm->Data(), x, y);
+ 
+ #if APIVERSNUM >= 20110
+ 	DestroyPixmap(pm);
+diff --git video.c video.c
+index 08d0bca..3d178f1 100644
+--- video.c
++++ video.c
+@@ -1,7 +1,7 @@
+ ///
+ ///	@file video.c	@brief Video module
+ ///
+-///	Copyright (c) 2009 - 2014 by Johns.  All Rights Reserved.
++///	Copyright (c) 2009 - 2015 by Johns.  All Rights Reserved.
+ ///
+ ///	Contributor(s):
+ ///
+@@ -280,7 +280,8 @@ typedef struct _video_module_
+ 
+     void (*const OsdClear) (void);	///< clear OSD
+     /// draw OSD ARGB area
+-    void (*const OsdDrawARGB) (int, int, int, int, const uint8_t *);
++    void (*const OsdDrawARGB) (int, int, int, int, int, const uint8_t *, int,
++	int);
+     void (*const OsdInit) (int, int);	///< initialize OSD
+     void (*const OsdExit) (void);	///< cleanup OSD
+ 
+@@ -887,11 +888,14 @@ static void GlxOsdExit(void)
+ ///
+ ///	Upload ARGB image to texture.
+ ///
+-///	@param x	x coordinate of image in osd texture
+-///	@param y	y coordinate of image in osd texture
+-///	@param width	width of image
+-///	@param height	height of image
+-///	@param argb	argb image
++///	@param xi	x-coordinate in argb image
++///	@param yi	y-coordinate in argb image
++///	@paran height	height in pixel in argb image
++///	@paran width	width in pixel in argb image
++///	@param pitch	pitch of argb image
++///	@param argb	32bit ARGB image data
++///	@param x	x-coordinate on screen of argb image
++///	@param y	y-coordinate on screen of argb image
+ ///
+ ///	@note looked by caller
+ ///
+@@ -1331,11 +1335,11 @@ static int AutoCropTolerance;		///< auto-crop tolerance
+ ///
+ ///	@param data	Y plane pixel data
+ ///	@param length	number of pixel to check
+-///	@param stride	offset of pixels
++///	@param pitch	offset of pixels
+ ///
+ ///	@note 8 pixel are checked at once, all values must be 8 aligned
+ ///
+-static int AutoCropIsBlackLineY(const uint8_t * data, int length, int stride)
++static int AutoCropIsBlackLineY(const uint8_t * data, int length, int pitch)
+ {
+     int n;
+     int o;
+@@ -1343,13 +1347,13 @@ static int AutoCropIsBlackLineY(const uint8_t * data, int length, int stride)
+     const uint64_t *p;
+ 
+ #ifdef DEBUG
+-    if ((size_t) data & 0x7 || stride & 0x7) {
++    if ((size_t) data & 0x7 || pitch & 0x7) {
+ 	abort();
+     }
+ #endif
+     p = (const uint64_t *)data;
+     n = length;				// FIXME: can remove n
+-    o = stride / 8;
++    o = pitch / 8;
+ 
+     r = 0UL;
+     while (--n >= 0) {
+@@ -5438,11 +5442,14 @@ static void VaapiOsdClear(void)
+ ///
+ ///	Upload ARGB to subpicture image.
+ ///
+-///	@param x	x position of image in osd
+-///	@param y	y position of image in osd
+-///	@param width	width of image
+-///	@param height	height of image
+-///	@param argb	argb image
++///	@param xi	x-coordinate in argb image
++///	@param yi	y-coordinate in argb image
++///	@paran height	height in pixel in argb image
++///	@paran width	width in pixel in argb image
++///	@param pitch	pitch of argb image
++///	@param argb	32bit ARGB image data
++///	@param x	x-coordinate on screen of argb image
++///	@param y	y-coordinate on screen of argb image
+ ///
+ ///	@note looked by caller
+ ///
+@@ -9240,16 +9247,19 @@ static void VdpauOsdClear(void)
+ ///
+ ///	Upload ARGB to subpicture image.
+ ///
+-///	@param x	x position of image in osd
+-///	@param y	y position of image in osd
+-///	@param width	width of image
+-///	@param height	height of image
+-///	@param argb	argb image
++///	@param xi	x-coordinate in argb image
++///	@param yi	y-coordinate in argb image
++///	@paran height	height in pixel in argb image
++///	@paran width	width in pixel in argb image
++///	@param pitch	pitch of argb image
++///	@param argb	32bit ARGB image data
++///	@param x	x-coordinate on screen of argb image
++///	@param y	y-coordinate on screen of argb image
+ ///
+ ///	@note looked by caller
+ ///
+-static void VdpauOsdDrawARGB(int x, int y, int width, int height,
+-    const uint8_t * argb)
++static void VdpauOsdDrawARGB(int xi, int yi, int width, int height, int pitch,
++    const uint8_t * argb, int x, int y)
+ {
+     VdpStatus status;
+     void const *data[1];
+@@ -9283,8 +9293,8 @@ static void VdpauOsdDrawARGB(int x, int y, int width, int height,
+     dst_rect.y0 = y;
+     dst_rect.x1 = dst_rect.x0 + width;
+     dst_rect.y1 = dst_rect.y0 + height;
+-    data[0] = argb;
+-    pitches[0] = width * 4;
++    data[0] = argb + xi * 4 + yi * pitch;
++    pitches[0] = pitch;
+ 
+ #ifdef USE_BITMAP
+     status =
+@@ -9499,20 +9509,26 @@ static void NoopOsdInit( __attribute__ ((unused))
+ ///
+ ///	Draw OSD ARGB image.
+ ///
+-///	@param x	x position of image in osd
+-///	@param y	y position of image in osd
+-///	@param width	width of image
+-///	@param height	height of image
+-///	@param argb	argb image
++///	@param xi	x-coordinate in argb image
++///	@param yi	y-coordinate in argb image
++///	@paran height	height in pixel in argb image
++///	@paran width	width in pixel in argb image
++///	@param pitch	pitch of argb image
++///	@param argb	32bit ARGB image data
++///	@param x	x-coordinate on screen of argb image
++///	@param y	y-coordinate on screen of argb image
+ ///
+ ///	@note looked by caller
+ ///
+ static void NoopOsdDrawARGB( __attribute__ ((unused))
+-    int x, __attribute__ ((unused))
+-    int y, __attribute__ ((unused))
++    int xi, __attribute__ ((unused))
++    int yi, __attribute__ ((unused))
+     int width, __attribute__ ((unused))
+     int height, __attribute__ ((unused))
+-    const uint8_t * argb)
++    int pitch, __attribute__ ((unused))
++    const uint8_t * argb, __attribute__ ((unused))
++    int x, __attribute__ ((unused))
++    int y)
+ {
+ }
+ 
+@@ -9631,14 +9647,17 @@ void VideoOsdClear(void)
+ ///
+ ///	Draw an OSD ARGB image.
+ ///
+-///	@param x	x position of image in osd
+-///	@param y	y position of image in osd
+-///	@param width	width of image
+-///	@param height	height of image
+-///	@param argb	argb image
++///	@param xi	x-coordinate in argb image
++///	@param yi	y-coordinate in argb image
++///	@paran height	height in pixel in argb image
++///	@paran width	width in pixel in argb image
++///	@param pitch	pitch of argb image
++///	@param argb	32bit ARGB image data
++///	@param x	x-coordinate on screen of argb image
++///	@param y	y-coordinate on screen of argb image
+ ///
+-void VideoOsdDrawARGB(int x, int y, int width, int height,
+-    const uint8_t * argb)
++void VideoOsdDrawARGB(int xi, int yi, int width, int height, int pitch,
++    const uint8_t * argb, int x, int y)
+ {
+     VideoThreadLock();
+     // update dirty area
+@@ -9663,7 +9682,7 @@ void VideoOsdDrawARGB(int x, int y, int width, int height,
+     Debug(4, "video: osd dirty %dx%d%+d%+d -> %dx%d%+d%+d\n", width, height, x,
+ 	y, OsdDirtyWidth, OsdDirtyHeight, OsdDirtyX, OsdDirtyY);
+ 
+-    VideoUsedModule->OsdDrawARGB(x, y, width, height, argb);
++    VideoUsedModule->OsdDrawARGB(xi, yi, width, height, pitch, argb, x, y);
+     OsdShown = 1;
+ 
+     VideoThreadUnlock();
+diff --git video.h video.h
+index 0587393..baa16dc 100644
+--- video.h
++++ video.h
+@@ -1,7 +1,7 @@
+ ///
+ ///	@file video.h	@brief Video module header file
+ ///
+-///	Copyright (c) 2009 - 2013 by Johns.  All Rights Reserved.
++///	Copyright (c) 2009 - 2015 by Johns.  All Rights Reserved.
+ ///
+ ///	Contributor(s):
+ ///
+@@ -168,7 +168,8 @@ extern void VideoSetAutoCrop(int, int, int);
+ extern void VideoOsdClear(void);
+ 
+     /// Draw an OSD ARGB image.
+-extern void VideoOsdDrawARGB(int, int, int, int, const uint8_t *);
++extern void VideoOsdDrawARGB(int, int, int, int, int, const uint8_t *, int,
++    int);
+ 
+     /// Get OSD size.
+ extern void VideoGetOsdSize(int *, int *);
