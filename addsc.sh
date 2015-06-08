@@ -13,4 +13,5 @@
 		exit 1
 	else
 		sed -e s/URL0/${REPO}/g src/vdr-plugin-sc/vdr-plugin-sc.template > src/vdr-plugin-sc/vdr-plugin-sc.conf
+		sed -e s/BUILD=n/BUILD=y/g -i src/vdr-plugin-sc/vdr-plugin-sc.conf
 	fi
