@@ -61,8 +61,12 @@ patch_vdr() {
 download_plugins() {
 	if ! is_downloaded $PKGNAME; then
 	    echo "downloading $NAME... $DOWNLOAD"
-	    wget -O - "$DOWNLOAD" | tar x$ARCHIVE -C $TMP | touch $TMP/.$PKGNAME"_downloaded"
-	    ln -sf $(find $TMP -type d -name $PKGNAME*) $PLUGINSRCDIR/$NAME
+	    if [ "$ARCHIVE" == "git" ]; then
+		git clone $DOWNLOAD $TMP/$PKGNAME | touch $TMP/.$PKGNAME"_downloaded"
+	    else
+		wget -O - "$DOWNLOAD" | tar x$ARCHIVE -C $TMP | touch $TMP/.$PKGNAME"_downloaded"
+	    fi
+	    ln -sf $(find $TMP -type d -name *$PKGNAME*) $PLUGINSRCDIR/$NAME
 	else
 	    echo $NAME already downloaded, please delete first!
 	fi

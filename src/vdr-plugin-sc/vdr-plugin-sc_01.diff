@@ -1,0 +1,11 @@
+--- FFdecsa/Makefile	2015-06-08 09:22:10.000000000 -0400
++++ FFdecsa/Makefile	2015-06-08 09:49:39.793608343 -0400
+@@ -19,7 +19,7 @@
+ #FLAGS += -pg
+ 
+ COMPILER ?= g++
+-FLAGS    ?= -Wall -fPIC -O3 -march=pentium -mmmx -fomit-frame-pointer -fexpensive-optimizations -funroll-loops
++FLAGS    ?= -Wall -fPIC -O2 -march=cortex-a8 -fomit-frame-pointer -fexpensive-optimizations -funroll-loops
+ 
+ H_FILES = FFdecsa.h parallel_generic.h parallel_std_def.h fftable.h \
+           parallel_032_4char.h \

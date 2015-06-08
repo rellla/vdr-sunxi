@@ -1,0 +1,13 @@
+--- Makefile	2015-06-08 09:22:10.000000000 -0400
++++ Makefile	2015-06-08 09:45:37.013611271 -0400
+@@ -78,8 +78,8 @@ OBJS = $(PLUGIN).o data.o filter.o syste
+ MAXCAID := 64
+ 
+ # FFdeCSA
+-PARALLEL   ?= PARALLEL_128_SSE2
+-CSAFLAGS   ?= -fexpensive-optimizations -fomit-frame-pointer -funroll-loops -O3 -mmmx -msse -msse2 -msse3
++PARALLEL   ?= PARALLEL_64_LONG
++CSAFLAGS   ?= -fexpensive-optimizations -funroll-loops
+ FFDECSADIR  = FFdecsa
+ FFDECSA     = $(FFDECSADIR)/FFdecsa.o
+ DECSALIB    = $(FFDECSA)
