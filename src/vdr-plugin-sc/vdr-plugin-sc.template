@@ -6,9 +6,7 @@ NAME=sc
 PKGNAME=vdr-plugin-sc
 ARCHIVE=git
 
-URL0=""
-
-URL1="https://github.com/$URL0/vdr-plugin-sc"
+URL1="https://github.com/URL0/vdr-plugin-sc"
 URL2=".git"
 URL3=""
 
