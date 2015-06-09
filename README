@@ -1,30 +1,33 @@
 VDR (www.tvdr.de) for Sunxi Devices
 ===================================
 
-This is a guide and some scripts that collect VDR source files and some plugins, patch it and make it ready to build.
-<WIP ON>This is all work in progress, you may run into several errors, downloading twice, patching twice etc. 
+This is a guide and some scripts collecting VDR source files and some plugins, patch it and make it ready to build
+with just a few commands.
+
+<WIP ON>This is all work in progress, you may run into several errors, downloading twice, patching twice etc.
 It's planned to integrate some security things, easy upgrade feature etc... </WIP OFF>
 
-Although this was intended to work on sunxi devices, it may work for any armhf platform as this is only a simple collection of vdr and some plugins
-which are patched with /patches. Other than cross building it on a Debian unstable amd64 system wasn't tested.
+Although this was intended to work on sunxi devices, it may work for any armhf platform as this is only a simple collection of vdr and some plugins.
+The scripts should work for a native build on the device or a cross building.
 
-1) Install toolchain
+Other than cross building it on a Debian unstable amd64 system wasn't tested.
+
+
+1) Obtain a toolchain (for cross compile)
+(This example shows the Debian way, every other toolchain should work, too)
 
 In this example I do a cross compile on a Debian unstable host (the NEW debian multiarch way).
+The toolchain is inluded in the main repository with Debian Jessie.
 You have to ensure, that host and destination system use the same symbol version on the libstdc++.so binary. It is not possible to run binaries, that are built on a Debian Sid host system with gcc-4.9.
 A Debian Sid or Jessie destination system should work, because both use compiler version 4.9 and the symbol version should match.
 
 A direct compile on the device should work, too.
 
-deb http://toolchains.secretsauce.net unstable main
-
-dpkg --add-architecture armhf
-wget -q -O - http://toolchains.secretsauce.net/key.gpg | sudo apt-key add -
-
 apt-get update
 apt-get upgrade
 apt-get install gcc-4.9-arm-linux-gnueabihf g++-4.9-arm-linux-gnueabihf
 
+Check, if this is still necessary:
 ln -s /usr/bin/arm-linux-gnueabihf-gcc-4.9 /usr/bin/arm-linux-gnueabihf-gcc
 ln -s /usr/bin/arm-linux-gnueabihf-c++-4.9 /usr/bin/arm-linux-gnueabihf-c++
 ln -s /usr/bin/arm-linux-gnueabihf-g++-4.9 /usr/bin/arm-linux-gnueabihf-g++
@@ -58,13 +61,25 @@ apt-get install libmagick++-dev:armhf
 apt-get install librsvg2-dev libcairo2-dev libxml2-dev libcurl4-openssl-dev
 
 
-3) Fetch sources and build it
-prepare.sh
+3) Fetch and prepare sources
+
+.... if you want to enable building the SC Plugin, do the following:
+./addsc.sh <Name_of_the_github_repo_owner>
+
+.... then fetch the sources and patch them
+./prepare.sh
+
+
+4) Build VDR and plugins
+
+Maybe you want to take a look into Make.config and adjust some directories for your own needs ...
+
+.... then just build it
 make
 make install
-make logos
 
-4) Make a tarball to move it to the device and make sure to have the runtime dependencies installed:
+
+5) Optionally make a tarball to move it to the device and make sure to have the runtime dependencies installed:
 
 make archive
 
