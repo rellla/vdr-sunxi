@@ -1,27 +1,3 @@
-diff --git codec.c codec.c
-index 8fc145c..3b6c17b 100644
---- codec.c
-+++ codec.c
-@@ -635,13 +635,13 @@ void CodecVideoDecode(VideoDecoder * decoder, const AVPacket * avpkt)
- 	    decoder->FirstKeyFrame++;
- 	    if (frame->key_frame) {
- 		Debug(3, "codec: key frame after %d frames\n",
--			decoder->FirstKeyFrame);
--		    decoder->FirstKeyFrame = 0;
--		}
--	    } else {
--		//DisplayPts(video_ctx, frame);
--		VideoRenderFrame(decoder->HwDecoder, video_ctx, frame);
-+		    decoder->FirstKeyFrame);
-+		decoder->FirstKeyFrame = 0;
- 	    }
-+	} else {
-+	    //DisplayPts(video_ctx, frame);
-+	    VideoRenderFrame(decoder->HwDecoder, video_ctx, frame);
-+	}
- #else
- 	//DisplayPts(video_ctx, frame);
- 	VideoRenderFrame(decoder->HwDecoder, video_ctx, frame);
 diff --git softhddev.c softhddev.c
 index a44f020..bc0a3a4 100644
 --- softhddev.c
