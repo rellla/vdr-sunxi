@@ -2,3 +2,5 @@
 .*_downloaded
 VDR
 tmp
+vdr-plugin-sc.conf
+export
