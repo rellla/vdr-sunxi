@@ -67,7 +67,9 @@ download_plugins() {
 		wget -O - "$DOWNLOAD" | tar x$ARCHIVE -C $TMP | touch $TMP/.$PKGNAME"_downloaded"
 	    fi
 	    ln -sf $(find $TMP -maxdepth 1 -type d -name *$PKGNAME*) $TMP/$NAME
-	    ln -sf $TMP/$NAME $PLUGINSRCDIR/$NAME
+	    if [ "$BUILD" == "y" ]; then
+		ln -sf $TMP/$NAME $PLUGINSRCDIR/$NAME
+	    fi
 	else
 	    echo $NAME already downloaded, please delete first!
 	fi
