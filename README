@@ -60,6 +60,9 @@ apt-get install libmagick++-dev:armhf
 ..Skindesigner
 apt-get install librsvg2-dev libcairo2-dev libxml2-dev libcurl4-openssl-dev
 
+..MPV
+apt-get install libmpv-dev:armhf libxrandr-dev:armhf
+
 
 3) Fetch and prepare sources
 
@@ -106,6 +109,9 @@ apt-get install imagemagick
 
 ..Skindesigner
 apt-get install librsvg2-2 libcairo2 libxml2 libcurl3
+
+..MPV
+apt-get install libmpv1 libxrandr2
 
 
 At last you have to edit /etc/services:
