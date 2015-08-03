@@ -58,29 +58,35 @@ patch_vdr() {
     done
 }
 
-download_plugins() {
-	if ! is_downloaded $PKGNAME; then
-	    echo "downloading $NAME... $DOWNLOAD"
+download_plugin() {
+	PLUGIN=$1
+	PLUGIN_NAME=${PLUGIN/vdr-plugin-/}
+	if ! is_downloaded $PLUGIN; then
+	    echo "downloading $PLUGIN_NAME... $DOWNLOAD"
 	    if [ "$ARCHIVE" == "git" ]; then
-		git clone $DOWNLOAD $TMP/$PKGNAME | touch $TMP/.$PKGNAME"_downloaded"
+		git clone $DOWNLOAD $TMP/$PLUGIN_NAME | touch $TMP/.$PLUGIN"_downloaded"
 	    else
-		wget -O - "$DOWNLOAD" | tar x$ARCHIVE -C $TMP | touch $TMP/.$PKGNAME"_downloaded"
+		if [ ! -e $TMP/$PLUGIN_NAME ]; then
+			mkdir $TMP/$PLUGIN_NAME
+		fi
+		wget -O - "$DOWNLOAD" | tar x$ARCHIVE -C $TMP/$PLUGIN_NAME --strip=1 | touch $TMP/.$PLUGIN"_downloaded"
 	    fi
-	    ln -sf $(find $TMP -maxdepth 1 -type d -name *$PKGNAME*) $TMP/$NAME
 	    if [ "$BUILD" == "y" ]; then
-		ln -sf $TMP/$NAME $PLUGINSRCDIR/$NAME
+		ln -sf $TMP/$PLUGIN_NAME$SUBDIR $PLUGINSRCDIR/$PLUGIN_NAME
 	    fi
 	else
-	    echo $NAME already downloaded, please delete first!
+	    echo $PLUGIN already downloaded, please delete first!
 	fi
 }
 
-patch_plugins() {
+patch_plugin() {
+    PLUGIN=$1
+    PLUGIN_NAME=${PLUGIN/vdr-plugin-/}
     for i in $(find $p -type f -name *.diff); do
-	    if ! is_patched $PKGNAME; then
-		if is_downloaded $PKGNAME; then
-		    echo "patching $NAME..."
-		    patch -d $PLUGINSRCDIR/$NAME -f -r - -p 0 < $i
+	    if ! is_patched $PLUGIN; then
+		if is_downloaded $PLUGIN; then
+		    echo "patching $PLUGIN_NAME..."
+		    patch -d $PLUGINSRCDIR/$PLUGIN_NAME -f -r - -p 0 < $i
 		fi
 	    else
 		echo $NAME already patched, please undo or delete first!
@@ -95,10 +101,12 @@ patch_vdr
 
 for p in $(find ./src -type d -name vdr-plugin*); do
     for i in $(find $p -type f -name *.conf); do
+	SUBDIR=""
 	. $i
+	PLUGIN=${p/.\/*\//}
 	if [ "$BUILD" == "y" ]; then
-	    download_plugins
-	    patch_plugins
+	    download_plugin $PLUGIN
+	    patch_plugin $PLUGIN
 	fi
     done
 done
