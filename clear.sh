@@ -4,6 +4,7 @@ BASE=`pwd`
 TMP=$BASE/tmp
 VDR=$TMP/vdr
 PLUGINSRCDIR=$VDR/PLUGINS/src
+PLUGINSCFG=$BASE/plugins.cfg
 
 delete_single_plugin() {
 	echo Deleting vdr-plugin-$1 ...
@@ -23,7 +24,15 @@ delete_vdr() {
 	echo "delete vdr"
 }
 
+delete_sc() {
+    sed -i /"vdr-plugin-sc"/d $PLUGINSCFG
+    rm -f $BASE/src/vdr-plugin-sc/vdr-plugin-sc.conf
+}
+
 delete_all() {
+	rm -rf $TMP
+	rm VDR
+	delete_sc
 	echo "delete all"
 }
 

@@ -1,7 +1,5 @@
 #!/bin/bash
 
-BUILD=n
-
 NAME=sc
 PKGNAME=vdr-plugin-sc
 ARCHIVE=git

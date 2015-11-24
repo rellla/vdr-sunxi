@@ -4,6 +4,7 @@ BASE=`pwd`
 TMP=$BASE/tmp
 VDR=$TMP/vdr
 PLUGINSRCDIR=$VDR/PLUGINS/src
+PLUGINSCFG=$BASE/plugins.cfg
 
 create_dirs() {
 	if [ ! -e $TMP ]; then
@@ -82,7 +83,7 @@ download_plugin() {
 patch_plugin() {
     PLUGIN=$1
     PLUGIN_NAME=${PLUGIN/vdr-plugin-/}
-    for i in $(find $p -type f -name *.diff); do
+    for i in $(find ./src/$PLUGIN/ -type f -name *.diff); do
 	    if ! is_patched $PLUGIN; then
 		if is_downloaded $PLUGIN; then
 		    echo "patching $PLUGIN_NAME..."
@@ -99,14 +100,14 @@ create_dirs
 download_vdr
 patch_vdr
 
-for p in $(find ./src -type d -name vdr-plugin*); do
-    for i in $(find $p -type f -name *.conf); do
-	SUBDIR=""
-	. $i
-	PLUGIN=${p/.\/*\//}
-	if [ "$BUILD" == "y" ]; then
-	    download_plugin $PLUGIN
-	    patch_plugin $PLUGIN
-	fi
-    done
-done
+while read line
+do
+    PLUGIN=${line// =*/};
+    BUILD=${line//vdr*= /};
+    f="./src/$PLUGIN/$PLUGIN.conf"
+    if [ "$BUILD" == "y" ]; then
+	. $f
+	download_plugin $PLUGIN
+	patch_plugin $PLUGIN
+    fi
+done < $PLUGINSCFG
