@@ -76,9 +76,10 @@ apt-get install libmpv-dev:armhf libxrandr-dev:armhf
 4) Build VDR and plugins
 
 Maybe you want to take a look into Make.config and adjust some directories for your own needs ...
+Set the target for compiler optimizations (CORTEXA7=1, CORTEXA8=1, default NULL)
 
 .... then just build it
-make
+CORTEXA7=1 make
 make install
 
 

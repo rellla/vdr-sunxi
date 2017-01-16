@@ -1,6 +1,6 @@
 --- Make.config	1969-12-31 19:00:00.000000000 -0500
 +++ Make.config	2014-08-19 11:10:47.000000000 -0400
-@@ -0,0 +1,110 @@
+@@ -0,0 +1,123 @@
 +#
 +# User defined Makefile options for the Video Disk Recorder
 +#
@@ -14,16 +14,29 @@
 +### The C compiler and options:
 +
 +CC       = gcc
-+CFLAGS   = -g -O3 -Wall
++CFLAGS   = -g -O2 -Wall
 +
 +CXX      = g++
-+CXXFLAGS = -g -O3 -Wall -Werror=overloaded-virtual -Wno-parentheses -fsigned-char
++CXXFLAGS = -g -O2 -Wall -Werror=overloaded-virtual -Wno-parentheses
 +
-+### Set Flags for Cortex-A8 platform
-+CPUOPT = armv7l
-+CSAFLAGS = -Wall -fPIC -g -O2 -fomit-frame-pointer -fexpensive-optimizations -funroll-loops -mfloat-abi=hard -mtune=cortex-a8 -mcpu=cortex-a8 -D__ARM_NEON__ -mfpu=neon -march=armv7-a
++CPUOPT = -D__ARM_NEON__ -mfloat-abi=hard -fsigned-char
++ifdef CORTEXA7
++### Set flags for Cortex-A7 platform
++CPUOPT += -mtune=cortex-a7 -mcpu=cortex-a7 -mfpu=neon-vfpv4 -mfpu=vfpv4-d16 -funsafe-math-optimizations
++else
++ifdef CORTEXA8
++### Set flags for Cortex-A8 platform
++CPUOPT += -mtune=cortex-a8 -mcpu=cortex-a8 -mfpu=neon-vfpv4 -mfpu=vfpv4-d16 -funsafe-math-optimizations
++else
++### Clear flags
++CPUOPT =
++endif
++endif
++
++CFLAGS += $(CPUOPT)
++CXXFLAGS += $(CPUOPT)
++CSAFLAGS = $(CFLAGS) -funroll-loops
 +PARALLEL = PARALLEL_128_4INT
-+CFLAGS = -pipe -O2 -mfloat-abi=hard -mtune=cortex-a8 -mcpu=cortex-a8 -D__ARM_NEON__ -mfpu=neon -march=armv7-a -fPIC -Werror=overloaded-virtual -Wno-parentheses -fsigned-char
 +
 +### Set environment for crosscompiling
 +HOST=arm-linux-gnueabihf
@@ -40,8 +53,8 @@
 +endif
 +
 +export CFLAGS+=${LDFLAGS}
-+export CXXFLAGS=${CFLAGS}
-+export CPPFLAGS=${CFLAGS}
++export CXXFLAGS
++export CPPFLAGS=${CXXFLAGS}
 +export LD=${CROSS_COMPILE}ld
 +export AR=${CROSS_COMPILE}ar
 +export CC=${CROSS_COMPILE}gcc
@@ -107,7 +120,7 @@
 +#VDR_USER = vdr
 +
 +### Fallback for plugins with old makefiles:
-+ifdef PLUGIN
-+CFLAGS   += -fPIC
-+CXXFLAGS += -fPIC
-+endif
++#ifdef PLUGIN
++#CFLAGS   += -fPIC
++#CXXFLAGS += -fPIC
++#endif
