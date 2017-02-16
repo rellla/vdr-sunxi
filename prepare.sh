@@ -32,8 +32,8 @@ if [ "$HOST" != "server" -a "$HOST" != "client" ]; then
 	echo "Parameter error: -h | --host [server,client]"
 	ERROR=1
 fi
-if [ "$PLATFORM" != "armhf" ]; then
-	echo "Parameter error: -p | --platform [armhf]"
+if [ "$PLATFORM" != "armhf" -a "$PLATFORM" != "i386" ]; then
+	echo "Parameter error: -p | --platform [armhf,i386]"
 	ERROR=1
 fi
 

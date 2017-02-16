@@ -1,6 +1,6 @@
 --- Make.config	1969-12-31 19:00:00.000000000 -0500
 +++ Make.config	2014-08-19 11:10:47.000000000 -0400
-@@ -0,0 +1,123 @@
+@@ -0,0 +1,121 @@
 +#
 +# User defined Makefile options for the Video Disk Recorder
 +#
@@ -19,24 +19,17 @@
 +CXX      = g++
 +CXXFLAGS = -g -O2 -Wall -Werror=overloaded-virtual -Wno-parentheses
 +
-+CPUOPT = -D__ARM_NEON__ -mfloat-abi=hard -fsigned-char
-+ifdef CORTEXA7
-+### Set flags for Cortex-A7 platform
-+CPUOPT += -mtune=cortex-a7 -mcpu=cortex-a7 -mfpu=neon-vfpv4 -mfpu=vfpv4-d16 -funsafe-math-optimizations
-+else
++ifdef ARCH_ARM
++CPUOPT = -D__ARM_NEON__ -mfloat-abi=hard -fsigned-char -mfpu=neon-vfpv4 -mfpu=vfpv4-d16 -funsafe-math-optimizations
 +ifdef CORTEXA8
 +### Set flags for Cortex-A8 platform
-+CPUOPT += -mtune=cortex-a8 -mcpu=cortex-a8 -mfpu=neon-vfpv4 -mfpu=vfpv4-d16 -funsafe-math-optimizations
++CPUOPT += -mtune=cortex-a8 -mcpu=cortex-a8
 +else
-+### Clear flags
-+CPUOPT =
++ifdef CORTEXA7
++### Set flags for Cortex-A7 platform
++CPUOPT += -mtune=cortex-a7 -mcpu=cortex-a7
 +endif
 +endif
-+
-+CFLAGS += $(CPUOPT)
-+CXXFLAGS += $(CPUOPT)
-+CSAFLAGS = $(CFLAGS) -funroll-loops
-+PARALLEL = PARALLEL_128_4INT
 +
 +### Set environment for crosscompiling
 +HOST=arm-linux-gnueabihf
@@ -51,6 +44,12 @@
 +  TOOLCHAIN = /usr/lib/${HOST}
 +  DESTDIR   = $(BASEDIR)/export
 +endif
++endif
++
++CFLAGS += $(CPUOPT)
++CXXFLAGS += $(CPUOPT)
++CSAFLAGS = $(CFLAGS) -funroll-loops
++PARALLEL = PARALLEL_128_4INT
 +
 +export CFLAGS+=${LDFLAGS}
 +export CXXFLAGS

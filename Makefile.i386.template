@@ -1,5 +1,4 @@
 export BASEDIR = $(shell pwd)
-export ARCH_ARM = 1
 
 SRCDIR=VDR
 
@@ -7,10 +6,10 @@ include $(SRCDIR)/Make.config
 
 VDRVERSION = $(shell sed -ne '/define VDRVERSION/s/^.*"\(.*\)".*$$/\1/p' $(SRCDIR)/config.h)
 DATE = $(shell date +%Y%m%d"_"%H%M)
-TARBALL = vdr-$(VDRVERSION)-armhf$(DATE).tar.bz2
+TARBALL = vdr-$(VDRVERSION)-i386-$(DATE).tar.bz2
 
 all clean clean-plugins plugins install:
-	(export PKG_CONFIG_PATH=/usr/lib/arm-linux-gnueabihf/pkgconfig; cd $(SRCDIR); $(MAKE) $@)
+	(cd $(SRCDIR); $(MAKE) $@)
 
 archive: $(DESTDIR)/usr/local/bin/vdr
 	(cd $(DESTDIR) &&\
