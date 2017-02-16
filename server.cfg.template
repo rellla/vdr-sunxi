@@ -1,5 +1,6 @@
 #!/bin/bash
 
+# Template for VDR server
 # Plugin build(y|n)?
 
 vdr-plugin-femon = n
@@ -7,15 +8,15 @@ vdr-plugin-epgsearch = n
 vdr-plugin-markad = n
 vdr-plugin-vdrmanager = n
 vdr-plugin-live = n
-vdr-plugin-svdrpservice = y
-vdr-plugin-svdrposd = y
-vdr-plugin-remoteosd = y
+vdr-plugin-svdrpservice = n
+vdr-plugin-svdrposd = n
+vdr-plugin-remoteosd = n
 vdr-plugin-weatherforecast = n
-vdr-plugin-softhddevice = y
-vdr-plugin-skindesigner = y
+vdr-plugin-softhddevice = n
+vdr-plugin-skindesigner = n
 vdr-plugin-streamdev = y
 vdr-plugin-dynamite = n
-vdr-plugin-remotetimers = y
+vdr-plugin-remotetimers = n
 vdr-plugin-mpv = n
 vdr-plugin-epgsync = n
 vdr-plugin-tvguideng = n

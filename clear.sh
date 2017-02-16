@@ -6,78 +6,80 @@ VDR=$TMP/vdr
 PLUGINSRCDIR=$VDR/PLUGINS/src
 PLUGINSCFG=$BASE/plugins.cfg
 
-delete_single_plugin() {
-	echo Deleting vdr-plugin-$1 ...
-}
-
 delete_plugin() {
-	declare -a PLUGIN
-	for argument in $*; do
-		PLUGIN[$i]="$argument"
-		delete_single_plugin ${PLUGIN[$i]}
-		i=$i+1
-		shift
-	done
+	PLUGIN=$1
+	echo "Deleting vdr-plugin-$PLUGIN ..."
+	rm -rf $TMP/vdr-plugin-"$PLUGIN"
+	rm -rf $TMP/.vdr-plugin-"$PLUGIN"_patched
+	rm -rf $TMP/.vdr-plugin-"$PLUGIN"_downloaded
+	rm -rf $PLUGINSRCDIR/$PLUGIN
 }
 
 delete_vdr() {
-	echo "delete vdr"
+	echo "Deleting vdr ..."
+	rm -rf $BASE/VDR
+	rm -rf $TMP/vdr
+	rm -rf $TMP/vdr-*.*.*
+	rm -rf $TMP/.vdr_patched
+	rm -rf $TMP/.vdr_downloaded
 }
 
 delete_sc() {
+    echo "Deleting sc config ..."
     sed -i /"vdr-plugin-sc"/d $PLUGINSCFG
     rm -f $BASE/src/vdr-plugin-sc/vdr-plugin-sc.conf
 }
 
 delete_all() {
+	echo "Deleting all ..."
+	delete_plugins
+	delete_vdr
+	rm -rf $BASE/Makefile
+	rm -rf $BASE/plugins.cfg
 	rm -rf $TMP
-	rm VDR
-	delete_sc
-	echo "delete all"
-}
-
-force_all() {
-	echo "forced delete all"
 }
 
 delete_plugins() {
-	echo "delete all plugins"
+    echo "Deleting all plugins ..."
+    while read line
+    do
+	if [[ $line == *"vdr-plugin-"* ]]; then
+	    PLUGIN=${line// =*/};
+	    PLUGIN_NAME=${PLUGIN//vdr-plugin-/}
+	    delete_plugin $PLUGIN_NAME
+	fi
+    done < $PLUGINSCFG
+    delete_sc
 }
 
-
 if [[ $# -lt 1 ]]; then
-    echo "at least one argument needed"
+    echo "Error: at least one argument needed"
     exit 1
 fi
 
-if [[ $# -eq 1 ]]; then
+while [[ $# -gt 0 ]]
+do
     case $1 in
     vdr)
 	delete_vdr
+	shift
 	;;
     plugins)
 	delete_plugins
+	shift
+	;;
+    plugin)
+	delete_plugin $2
+	shift
+	shift
 	;;
     all)
 	delete_all
-	;;
-    force)
-	force_all
-	;;
-    *)
-	echo "wrong argument"
-	;;
-    esac
-fi
-
-if [[ $# -gt 1 ]]; then
-    case $1 in
-    plugin)
 	shift
-	delete_plugin $*
 	;;
     *)
-	echo "wrong argument"
+	echo "wrong argument (vdr|plugins|all| plugin *)"
+	shift
 	;;
     esac
-fi
+done
